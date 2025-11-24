@@ -1,0 +1,291 @@
+// Code your design here
+module FullAdder(s,cout,a,b,cin);
+  output  s,cout ;
+  input a,b,cin;
+  wire w1,w2,w3;
+  xor(w1, a, b);     
+  xor(s, w1, cin);     
+  and(w2, a, b);
+  and(w3, w1, cin);
+  or(cout, w2, w3);
+endmodule
+
+module fourbitfulladder(s,cout,a,b,cin);   
+  input [3:0] b,a;
+  output [3:0] s;
+  output cout;
+  input cin;
+  wire w1,w2,w3;
+
+  FullAdder fs0(s[0],w1,a[0],b[0],cin);
+  FullAdder fs1(s[1],w2,a[1],b[1],w1); 
+  FullAdder fs2(s[2],w3,a[2],b[2],w2); 
+  FullAdder fs3(s[3],cout,a[3],b[3],w3);
+
+endmodule
+
+module fourbcdadder(s,outputcarry,a,b,cin);
+  input [3:0] a, b;
+  input cin;
+  output outputcarry;                        
+  output [3:0] s;
+
+  wire bin_cout;         
+  wire [3:0] w;
+
+  fourbitfulladder circuit1(w, bin_cout, a, b, cin);
+
+  wire f1, f2;
+  wire carry;
+
+  and g1(f1, w[3], w[2]);
+  and g2(f2, w[3], w[1]);
+  or  g3(carry, bin_cout, f1, f2);   
+
+  wire t1, t2, t3, t4;
+
+  FullAdder R1(s[0], t1, w[0], 1'b0, 1'b0);      
+  FullAdder R2(s[1], t2, w[1], carry, t1);        
+  FullAdder R3(s[2], t3, w[2], carry, t2);        
+  FullAdder R4(s[3], t4, w[3], 1'b0, t3);        
+
+  assign outputcarry = carry;
+
+endmodule
+
+
+module sevenSegmentDisplay (SEG, DIG);
+  input  [0:3] DIG;       
+  output [0:6] SEG;      
+
+  wire [3:1] N;          
+  not(N[1], DIG[1]);
+  not(N[2], DIG[2]);
+  not(N[3], DIG[3]);
+
+  wire [14:0] W;        
+
+  and(W[0], N[1], N[3]);
+  and(W[1], DIG[1], DIG[3]);
+  or (SEG[0], W[0], W[1], DIG[2], DIG[0]); 
+  and(W[2], N[2], N[3]);
+  and(W[3], DIG[2], DIG[3]);
+  or (SEG[1], N[1], W[2], W[3]); 
+
+  or (SEG[2], N[2], DIG[3], DIG[1]); 
+
+  and(W[4], N[1], N[3]);
+  and(W[5], N[1], DIG[2]);
+  and(W[6], DIG[1], N[2], DIG[3]);
+  and(W[7], DIG[2], N[3]);
+  or (SEG[3], W[4], W[5], W[6], W[7], DIG[0]);
+
+  and(W[8], N[1], N[3]);
+  and(W[9], DIG[2], N[3]);
+  or (SEG[4], W[9], W[8]); 
+
+  and(W[10], N[2], N[3]);
+  and(W[11], DIG[1], N[2]);
+  and(W[12], DIG[1], N[3]);
+  or (SEG[5], W[10], W[11], W[12], DIG[0]); 
+
+  or (SEG[6], W[12], W[11], W[5], DIG[0]); 
+
+endmodule
+
+
+module bcd16bit(s,cout,a,b,cin);
+  output [15:0] s;
+  output cout;
+  input cin;
+  input [15:0] a,b;
+  wire w1,w2,w3;
+
+  fourbcdadder b11(s[3:0],    w1, a[3:0],    b[3:0],    cin);
+  fourbcdadder b22(s[7:4],    w2, a[7:4],    b[7:4],    w1);
+  fourbcdadder b33(s[11:8],   w3, a[11:8],   b[11:8],   w2);
+  fourbcdadder b44(s[15:12], cout, a[15:12], b[15:12], w3);
+
+endmodule
+
+
+
+
+
+
+
+module adder8_gate(sum, cout, a, b, cin);
+  input [7:0] a, b;
+  input cin;
+  output [7:0] sum;
+  output cout;
+  wire w1,w2,w3,w4,w5,w6,w7;
+
+  FullAdder f0(sum[0], w1, a[0], b[0], cin);
+  FullAdder f1(sum[1], w2, a[1], b[1], w1);
+  FullAdder f2(sum[2], w3, a[2], b[2], w2);
+  FullAdder f3(sum[3], w4, a[3], b[3], w3);
+  FullAdder f4(sum[4], w5, a[4], b[4], w4);
+  FullAdder f5(sum[5], w6, a[5], b[5], w5);
+  FullAdder f6(sum[6], w7, a[6], b[6], w6);
+  FullAdder f7(sum[7], cout, a[7], b[7], w7);
+endmodule
+
+
+module etem(prod, carry_out, x_in, y_in, c_in);
+  input [7:0] x_in, y_in;
+  input c_in;
+  output [15:0] prod;
+  output carry_out;
+
+
+  wire [6:0] pp0;
+  and(pp0[0], x_in[1], y_in[0]);
+  and(pp0[1], x_in[2], y_in[0]);
+  and(pp0[2], x_in[3], y_in[0]);
+  and(pp0[3], x_in[4], y_in[0]);
+  and(pp0[4], x_in[5], y_in[0]);
+  and(pp0[5], x_in[6], y_in[0]);
+  and(pp0[6], x_in[7], y_in[0]);
+  and(prod[0], x_in[0], y_in[0]);
+
+  wire [7:0] pp1;
+  and(pp1[0], x_in[0], y_in[1]);
+  and(pp1[1], x_in[1], y_in[1]);
+  and(pp1[2], x_in[2], y_in[1]);
+  and(pp1[3], x_in[3], y_in[1]);
+  and(pp1[4], x_in[4], y_in[1]);
+  and(pp1[5], x_in[5], y_in[1]);
+  and(pp1[6], x_in[6], y_in[1]);
+  and(pp1[7], x_in[7], y_in[1]);
+
+  wire [7:0] t0; wire tc0;
+  adder8_gate u0(t0, tc0, {pp0, 1'b0}, pp1, c_in);
+  buf(prod[1], t0[0]);
+
+  wire [7:0] pp2;
+  and(pp2[0], x_in[0], y_in[2]);
+  and(pp2[1], x_in[1], y_in[2]);
+  and(pp2[2], x_in[2], y_in[2]);
+  and(pp2[3], x_in[3], y_in[2]);
+  and(pp2[4], x_in[4], y_in[2]);
+  and(pp2[5], x_in[5], y_in[2]);
+  and(pp2[6], x_in[6], y_in[2]);
+  and(pp2[7], x_in[7], y_in[2]);
+
+  wire [7:0] t1; wire tc1;
+  adder8_gate u1(t1, tc1, {1'b0, t0[7:1]}, pp2, tc0);
+  buf(prod[2], t1[0]);
+
+  wire [7:0] pp3;
+  and(pp3[0], x_in[0], y_in[3]);
+  and(pp3[1], x_in[1], y_in[3]);
+  and(pp3[2], x_in[2], y_in[3]);
+  and(pp3[3], x_in[3], y_in[3]);
+  and(pp3[4], x_in[4], y_in[3]);
+  and(pp3[5], x_in[5], y_in[3]);
+  and(pp3[6], x_in[6], y_in[3]);
+  and(pp3[7], x_in[7], y_in[3]);
+
+  wire [7:0] t2; wire tc2;
+  adder8_gate u2(t2, tc2, {1'b0, t1[7:1]}, pp3, tc1);
+  buf(prod[3], t2[0]);
+
+  wire [7:0] pp4;
+  and(pp4[0], x_in[0], y_in[4]);
+  and(pp4[1], x_in[1], y_in[4]);
+  and(pp4[2], x_in[2], y_in[4]);
+  and(pp4[3], x_in[3], y_in[4]);
+  and(pp4[4], x_in[4], y_in[4]);
+  and(pp4[5], x_in[5], y_in[4]);
+  and(pp4[6], x_in[6], y_in[4]);
+  and(pp4[7], x_in[7], y_in[4]);
+
+  wire [7:0] t3; wire tc3;
+  adder8_gate u3(t3, tc3, {1'b0, t2[7:1]}, pp4, tc2);
+  buf(prod[4], t3[0]);
+
+  wire [7:0] pp5;
+  and(pp5[0], x_in[0], y_in[5]);
+  and(pp5[1], x_in[1], y_in[5]);
+  and(pp5[2], x_in[2], y_in[5]);
+  and(pp5[3], x_in[3], y_in[5]);
+  and(pp5[4], x_in[4], y_in[5]);
+  and(pp5[5], x_in[5], y_in[5]);
+  and(pp5[6], x_in[6], y_in[5]);
+  and(pp5[7], x_in[7], y_in[5]);
+
+  wire [7:0] t4; wire tc4;
+  adder8_gate u4(t4, tc4, {1'b0, t3[7:1]}, pp5, tc3);
+  buf(prod[5], t4[0]);
+
+  wire [7:0] pp6;
+  and(pp6[0], x_in[0], y_in[6]);
+  and(pp6[1], x_in[1], y_in[6]);
+  and(pp6[2], x_in[2], y_in[6]);
+  and(pp6[3], x_in[3], y_in[6]);
+  and(pp6[4], x_in[4], y_in[6]);
+  and(pp6[5], x_in[5], y_in[6]);
+  and(pp6[6], x_in[6], y_in[6]);
+  and(pp6[7], x_in[7], y_in[6]);
+
+  wire [7:0] t5; wire tc5;
+  adder8_gate u5(t5, tc5, {1'b0, t4[7:1]}, pp6, tc4);
+  buf(prod[6], t5[0]);
+
+  wire [7:0] pp7;
+  and(pp7[0], x_in[0], y_in[7]);
+  and(pp7[1], x_in[1], y_in[7]);
+  and(pp7[2], x_in[2], y_in[7]);
+  and(pp7[3], x_in[3], y_in[7]);
+  and(pp7[4], x_in[4], y_in[7]);
+  and(pp7[5], x_in[5], y_in[7]);
+  and(pp7[6], x_in[6], y_in[7]);
+  and(pp7[7], x_in[7], y_in[7]);
+
+  wire [7:0] t6; wire tc6;
+  adder8_gate u6(t6, tc6, {1'b0, t5[7:1]},pp7, tc5);
+endmodule
+module multiplier8x8 (
+    input  [7:0] A,
+    input  [7:0] B,
+    output [15:0] P
+);
+    assign P = A * B;  // استخدام operator الضرب الداخلي للتأكد من صحة النتائج
+endmodule
+
+
+
+module tb_multiplier8x8;
+
+    reg  [7:0] x_in, y_in;
+    wire [15:0] prod;
+
+    multiplier8x8 dut(.A(x_in), .B(y_in), .P(prod));
+
+    initial begin
+        $display(" X   *   Y   =   PROD (Decimal)   |  Hex Output  | Binary Output");
+        $display("==============================================================");
+
+        x_in = 8'd5;    y_in = 8'd3;   #10;
+        $display(" %3d * %3d = %6d           |  %4h       | %b", x_in, y_in, prod, prod, prod);
+
+        x_in = 8'd12;   y_in = 8'd7;   #10;
+        $display(" %3d * %3d = %6d           |  %4h       | %b", x_in, y_in, prod, prod, prod);
+
+        x_in = 8'd25;   y_in = 8'd10;  #10;
+        $display(" %3d * %3d = %6d           |  %4h       | %b", x_in, y_in, prod, prod, prod);
+
+        x_in = 8'd100;  y_in = 8'd100; #10;
+        $display(" %3d * %3d = %6d           |  %4h       | %b", x_in, y_in, prod, prod, prod);
+
+        x_in = 8'd255;  y_in = 8'd255; #10;
+        $display(" %3d * %3d = %6d           |  %4h       | %b", x_in, y_in, prod, prod, prod);
+
+        $finish;
+    end
+
+endmodule
+
+
+endmodule
