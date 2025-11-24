@@ -1,0 +1,74 @@
+module sevenSegmentDisplay (SEG, DIG);
+  input  [0:3] DIG;       
+  output [0:6] SEG;      
+
+  wire [3:1] N;          
+  not(N[1], DIG[1]);
+  not(N[2], DIG[2]);
+  not(N[3], DIG[3]);
+
+  wire [14:0] W;        
+
+  and(W[0], N[1], N[3]);
+  and(W[1], DIG[1], DIG[3]);
+  or (SEG[0], W[0], W[1], DIG[2], DIG[0]); 
+  and(W[2], N[2], N[3]);
+  and(W[3], DIG[2], DIG[3]);
+  or (SEG[1], N[1], W[2], W[3]); 
+
+  or (SEG[2], N[2], DIG[3], DIG[1]); 
+
+  and(W[4], N[1], N[3]);
+  and(W[5], N[1], DIG[2]);
+  and(W[6], DIG[1], N[2], DIG[3]);
+  and(W[7], DIG[2], N[3]);
+  or (SEG[3], W[4], W[5], W[6], W[7], DIG[0]);
+
+  and(W[8], N[1], N[3]);
+  and(W[9], DIG[2], N[3]);
+  or (SEG[4], W[9], W[8]); 
+
+  and(W[10], N[2], N[3]);
+  and(W[11], DIG[1], N[2]);
+  and(W[12], DIG[1], N[3]);
+  or (SEG[5], W[10], W[11], W[12], DIG[0]); 
+
+  or (SEG[6], W[12], W[11], W[5], DIG[0]); 
+endmodule
+module test;
+
+  reg [3:0] DIG;           
+  wire [0:6] SEG;      
+
+
+  sevenSegmentDisplay  uut(SEG, DIG);
+
+  initial begin
+    $display("==============================================");
+    $display("   BCD   |  a b c d e f g ");
+    $display("==============================================");
+  end
+
+  initial begin
+     DIG = 4'b0000;
+    #10  DIG = 4'b0001;
+    #10  DIG = 4'b0010;
+    #10  DIG = 4'b0011;
+    #10  DIG = 4'b0100;
+    #10  DIG = 4'b0101;
+    #10  DIG = 4'b0110;
+    #10  DIG = 4'b0111;
+    #10  DIG = 4'b1000;
+    #10  DIG = 4'b1001;
+    #10  DIG = 4'b1111;
+  end
+
+  initial
+    $monitor("%b%b%b%b  |  %b %b %b %b %b %b %b",
+             DIG[0], DIG[1], DIG[2], DIG[3],SEG[0],SEG[1],SEG[2],SEG[3],SEG[4],SEG[5],SEG[6] );
+
+endmodule
+
+  
+
+endmodule
