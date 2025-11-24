@@ -1,0 +1,78 @@
+// Code your design here
+module FullAdder(s,cout,a,b,cin);
+  output  s,cout ;
+  input a,b,cin;
+  wire w1,w2,w3;
+  xor(w1, a, b);     
+  xor(s, w1, cin);     
+  and(w2, a, b);
+  and(w3, w1, cin);
+  or(cout, w2, w3);
+endmodule
+
+module fourbitfulladder(s,cout,a,b,cin);   
+  input [3:0] b,a;
+  output [3:0] s;
+  output cout;
+  input cin;
+  wire w1,w2,w3;
+
+  FullAdder fs0(s[0],w1,a[0],b[0],cin);
+  FullAdder fs1(s[1],w2,a[1],b[1],w1); 
+  FullAdder fs2(s[2],w3,a[2],b[2],w2); 
+  FullAdder fs3(s[3],cout,a[3],b[3],w3);
+
+endmodule
+
+module fourbcdadder(s,outputcarry,a,b,cin);
+  input [3:0] a, b;
+  input cin;
+  output outputcarry;                        
+  output [3:0] s;
+
+  wire bin_cout;         
+  wire [3:0] w;
+
+  fourbitfulladder circuit1(w, bin_cout, a, b, cin);
+
+  wire f1, f2;
+  wire carry;
+
+  and g1(f1, w[3], w[2]);
+  and g2(f2, w[3], w[1]);
+  or  g3(carry, bin_cout, f1, f2);   
+
+  wire t1, t2, t3, t4;
+
+  FullAdder R1(s[0], t1, w[0], 1'b0, 1'b0);      
+  FullAdder R2(s[1], t2, w[1], carry, t1);        
+  FullAdder R3(s[2], t3, w[2], carry, t2);        
+  FullAdder R4(s[3], t4, w[3], 1'b0, t3);        
+
+  assign outputcarry = carry;
+endmodule
+
+// Code your testbench here
+// or browse Examples
+module test;
+ reg [3:0] a, b;  
+reg cin;
+wire [3:0] s;
+wire outputcarry;
+
+  fourbcdadder d1(s,outputcarry,a,b,cin);
+  initial
+    begin
+      a = 4'd5; b = 4'd4;cin = 0;
+  #10 a = 4'd9; b = 4'd7; cin = 0;
+  #10  a = 4'd8; b = 4'd5;cin = 1;
+  #10 a = 4'd6; b = 4'd9; cin = 0;
+   #10 a = 4'd9; b = 4'd9; cin = 0;
+
+    end
+  initial
+      $monitor("  A=%d  B=%d  Cin=%b  |  S=%d  Carry=%b",
+             a, b, cin, s, outputcarry);
+    endmodule
+
+endmodule
